@@ -2739,7 +2739,7 @@ task.spawn(function()
     end
 end);
 local v49 = v16.Main:AddToggle("ToggleLevel", {
-    Title = "Cày Cấp (Tự Nhặt Rương)",
+    Title = "Cày Cấp",
     Description = "",
     Default = false
 });
@@ -2754,61 +2754,64 @@ spawn(function()
                 CheckLevel();
 
                 -- **TÌM RƯƠNG GẦN NHẤT TRƯỚC KHI ĐÁNH QUÁI**
-                local v673 = game:GetService("Players");
-                local v674 = v673.LocalPlayer;
-                local v675 = v674.Character or v674.CharacterAdded:Wait();
-                local v676 = v675:GetPivot().Position;
-                local v677 = game:GetService("CollectionService");
-                local v678 = v677:GetTagged("_ChestTagged"); -- Kiểm tra tag của rương
-                local v679, v680 = math.huge;
-                
-                for _, v766 in ipairs(v678) do
-                    local v767 = (v766:GetPivot().Position - v676).Magnitude;
-                    if (not v766:GetAttribute("IsDisabled") and (v767 < v679)) then
-                        v679, v680 = v767, v766;
+                local player = game:GetService("Players").LocalPlayer;
+                local character = player.Character or player.CharacterAdded:Wait();
+                local playerPosition = character:GetPivot().Position;
+                local chests = game:GetService("CollectionService"):GetTagged("_ChestTagged");
+
+                local closestChest, closestDistance = nil, math.huge;
+
+                for _, chest in ipairs(chests) do
+                    if not chest:GetAttribute("IsDisabled") then
+                        local distance = (chest:GetPivot().Position - playerPosition).Magnitude;
+                        if distance < closestDistance then
+                            closestDistance = distance;
+                            closestChest = chest;
+                        end
                     end
                 end
-                
-                if v680 and v679 <= 200 then  -- Tăng phạm vi lên 200
-                    Tween2(CFrame.new(v680:GetPivot().Position));
-                    task.wait(1);  -- Chờ di chuyển xong
+
+                if closestChest and closestDistance <= 200 then
+                    Tween2(CFrame.new(closestChest:GetPivot().Position));
+                    task.wait(1);
 
                     -- **Thử chạm vào rương**
-                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v680, 0);
-                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v680, 1);
+                    firetouchinterest(character.HumanoidRootPart, closestChest, 0);
+                    firetouchinterest(character.HumanoidRootPart, closestChest, 1);
                 end
 
                 -- **LÀM NHIỆM VỤ, ĐÁNH QUÁI**
-                if (not string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) 
-                    or (game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false)) then
-                    
+                local questGui = player.PlayerGui.Main.Quest;
+                if (not string.find(questGui.Container.QuestTitle.Title.Text, NameMon) or not questGui.Visible) then
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest");
                     Tween(CFrameQ);
-                    if ((CFrameQ.Position - game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 5) then
+                    
+                    if (CFrameQ.Position - character.HumanoidRootPart.Position).Magnitude <= 5 then
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv);
                     end
-                
                 else
-                    for _, v1433 in ipairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                        if (v1433:FindFirstChild("Humanoid") and v1433:FindFirstChild("HumanoidRootPart") and (v1433.Humanoid.Health > 0)) then
-                            if (v1433.Name == Ms) then
+                    for _, enemy in ipairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                        if enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
+                            if enemy.Name == Ms then
                                 repeat
                                     wait(_G.Fast_Delay);
                                     AttackNoCoolDown();
                                     bringmob = true;
                                     AutoHaki();
                                     EquipTool(SelectWeapon);
-                                    Tween(v1433.HumanoidRootPart.CFrame * Pos);
-                                    v1433.HumanoidRootPart.Size = Vector3.new(60, 60, 60);
-                                    v1433.HumanoidRootPart.Transparency = 1;
-                                    v1433.Humanoid.JumpPower = 0;
-                                    v1433.Humanoid.WalkSpeed = 0;
-                                    v1433.HumanoidRootPart.CanCollide = false;
-                                    FarmPos = v1433.HumanoidRootPart.CFrame;
-                                    MonFarm = v1433.Name;
-                                until not _G.AutoLevel or not v1433.Parent or (v1433.Humanoid.Health <= 0) 
-                                    or not game:GetService("Workspace").Enemies:FindFirstChild(v1433.Name) 
-                                    or (game.Players.LocalPlayer.PlayerGui.Main.Quest.Visible == false)
+                                    Tween(enemy.HumanoidRootPart.CFrame * Pos);
+
+                                    -- **Chỉnh sửa để quái không bị đơ**
+                                    enemy.Humanoid.WalkSpeed = 16;  -- Giữ tốc độ di chuyển bình thường
+                                    enemy.Humanoid.JumpPower = 50;  -- Để quái có thể nhảy bình thường
+                                    enemy.HumanoidRootPart.CanCollide = true;  -- Giữ vật lý bình thường
+                                    enemy.Humanoid.PlatformStand = false;  -- Tránh làm quái bị đứng yên
+                                    
+                                    FarmPos = enemy.HumanoidRootPart.CFrame;
+                                    MonFarm = enemy.Name;
+                                until not _G.AutoLevel or not enemy.Parent or enemy.Humanoid.Health <= 0 
+                                    or not game:GetService("Workspace").Enemies:FindFirstChild(enemy.Name) 
+                                    or not questGui.Visible
                                 bringmob = false;
                             end
                         end
