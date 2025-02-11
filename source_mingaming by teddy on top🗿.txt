@@ -2759,7 +2759,7 @@ spawn(function()
                 local v675 = v674.Character or v674.CharacterAdded:Wait();
                 local v676 = v675:GetPivot().Position;
                 local v677 = game:GetService("CollectionService");
-                local v678 = v677:GetTagged("_ChestTagged");
+                local v678 = v677:GetTagged("_ChestTagged"); -- Kiểm tra tag của rương
                 local v679, v680 = math.huge;
                 
                 for _, v766 in ipairs(v678) do
@@ -2769,9 +2769,13 @@ spawn(function()
                     end
                 end
                 
-                if v680 and v679 <= 50 then  -- Chỉ lụm rương nếu nó ở gần (<= 50)
+                if v680 and v679 <= 200 then  -- Tăng phạm vi lên 200
                     Tween2(CFrame.new(v680:GetPivot().Position));
-                    task.wait(1);  -- Đợi nhặt rương rồi tiếp tục
+                    task.wait(1);  -- Chờ di chuyển xong
+
+                    -- **Thử chạm vào rương**
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v680, 0);
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v680, 1);
                 end
 
                 -- **LÀM NHIỆM VỤ, ĐÁNH QUÁI**
