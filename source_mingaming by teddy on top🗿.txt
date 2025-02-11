@@ -6471,21 +6471,17 @@ spawn(function()
         end
     end
 end);
-local v92 = v16.Setting:AddToggle("ToggleBlack", {
-    Title = "Màn Hình Đen",
+local v92 = v16.Setting:AddToggle("ToggleWhite", {
+    Title = "Màn Hình Trắng",
     Description = "",
     Default = false
 });
 v92:OnChanged(function(v279)
-    _G.BlackScreen = v279;
-    if _G.BlackScreen then
-        game:GetService("Lighting").Ambient = Color3.new(0, 0, 0)
-        game:GetService("Lighting").OutdoorAmbient = Color3.new(0, 0, 0)
-        game:GetService("Lighting").Brightness = 0
-    else
-        game:GetService("Lighting").Ambient = Color3.new(1, 1, 1)
-        game:GetService("Lighting").OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
-        game:GetService("Lighting").Brightness = 1
+    _G.DarkScreen = v279;
+    if (_G.DarkScreen == true) then
+        game:GetService("RunService"):Set3dRenderingEnabled(false);
+    elseif (_G.DarkScreen == false) then
+        game:GetService("RunService"):Set3dRenderingEnabled(true);
     end
 end);
 v17.ToggleWhite:SetValue(false);
