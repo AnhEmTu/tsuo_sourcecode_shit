@@ -7174,3 +7174,25 @@ SliderPosZ:OnChanged(function(Value)
      posZ = Value
 end)
 SliderPosZ:SetValue(0)
+
+
+_G.FastAttack = false
+_G.FastAttackDelay = 0.175
+
+local function FastAttackFunction()
+    local CombatFramework = debug.getupvalues(require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework))
+    local activeController = CombatFramework[2].activeController
+    if activeController then
+        activeController.attacking = false
+        activeController.increment = 3
+        activeController.hitboxMagnitude = 100
+    end
+end
+
+spawn(function()
+    while task.wait(_G.FastAttackDelay) do
+        if _G.FastAttack then
+            FastAttackFunction()
+        end
+    end
+end)
